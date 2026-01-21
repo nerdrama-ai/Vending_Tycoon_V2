@@ -1,8 +1,9 @@
-
-export default function HUD({ level }) {
+export default function HUD({ matchesLeft }) {
   return (
     <div className="hud">
-      <h2>Level {level}</h2>
+      <div className="matches">
+        Matches Left: <strong>{matchesLeft}</strong>
+      </div>
     </div>
   );
 }
