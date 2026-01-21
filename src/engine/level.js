@@ -5,9 +5,9 @@ import { trySwap } from "./swap";
 const COLORS = ["red", "blue", "green", "orange", "yellow"];
 const ITEMS = ["chips", "chocolate", "drink", "can", "bar"];
 
-export function spawnTile() {
+export function spawnTile(items) {
   return {
-    type: ITEMS[Math.floor(Math.random() * ITEMS.length)],
+    type: items[Math.floor(Math.random() * items.length)],
     color: COLORS[Math.floor(Math.random() * COLORS.length)]
   };
 }
