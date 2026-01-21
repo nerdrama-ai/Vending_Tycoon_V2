@@ -138,3 +138,24 @@ body {
     height: 56px;
   }
 }
+
+/* === TILE STATES === */
+
+.tile.selected {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.7);
+}
+
+.tile.shake {
+  animation: shake 0.3s;
+}
+
+/* === SHAKE ANIMATION === */
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
