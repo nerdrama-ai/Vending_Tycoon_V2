@@ -1,4 +1,9 @@
+const images = import.meta.glob("../assets/items/*.png", {
+  eager: true,
+  import: "default"
+});
 
 export function getAssetPath(type, color) {
-  return `/src/assets/items/${color}${type}.png`;
+  const key = `../assets/items/${color}${type}.png`;
+  return images[key];
 }
