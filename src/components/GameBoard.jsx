@@ -1,14 +1,26 @@
-
 import { useEffect, useRef, useState } from "react";
 import { generateBoard } from "../engine/randomizer";
 import { findMatches } from "../engine/matchEngine";
 import Tile from "./Tile";
-import Confetti from "./Confetti";
+import ProgressBar from "./ProgressBar";
 
 export default function GameBoard({ level, onLevelComplete }) {
   const [board, setBoard] = useState(() => generateBoard(level));
-  const [confetti, setConfetti] = useState([]);
+  const [matchesDone, setMatchesDone] = useState(0);
   const drag = useRef(null);
+
+  const progress = Math.min(
+    (matchesDone / level.matches) * 100,
+    100
+  );
+
+  useEffect(() => {
+    if (progress >= 100) {
+      setTimeout(() => {
+        onLevelComplete();
+      }, 600);
+    }
+  }, [progress]);
 
   function swap(a, b) {
     const copy = board.map(r => r.map(c => [...c]));
@@ -22,7 +34,7 @@ export default function GameBoard({ level, onLevelComplete }) {
     const matches = findMatches(swapped);
 
     if (!matches.length) {
-      setBoard(swap(a, b)); // swap back
+      setBoard(swap(a, b)); // snap back
       return;
     }
 
@@ -32,46 +44,46 @@ export default function GameBoard({ level, onLevelComplete }) {
 
   function crush(matches) {
     const copy = board.map(r => r.map(c => [...c]));
+
     matches.forEach(group =>
-      group.forEach(([r,c]) => {
+      group.forEach(([r, c]) => {
         copy[r][c].shift();
-        setConfetti(cfs => [...cfs, { x: c*90, y: r*90, id: Math.random() }]);
       })
     );
+
+    setMatchesDone(m => m + matches.length);
     setBoard(copy);
   }
 
-  function onPointerDown(r,c) {
-    drag.current = { r,c };
+  function onPointerDown(r, c) {
+    drag.current = { r, c };
   }
 
-  function onPointerUp(r,c) {
+  function onPointerUp(r, c) {
     if (!drag.current) return;
     const d = drag.current;
     const dx = Math.abs(d.c - c);
     const dy = Math.abs(d.r - r);
-    if (dx + dy === 1) trySwap(d, { r,c });
+    if (dx + dy === 1) trySwap(d, { r, c });
     drag.current = null;
   }
 
   return (
-    <>
-      <div className="board">
-        {board.map((row,r)=>
-          row.map((stack,c)=>(
+    <div className="machine-layout">
+      <div className="machine-grid">
+        {board.map((row, r) =>
+          row.map((stack, c) => (
             <Tile
-              key={r+"-"+c}
+              key={r + "-" + c}
               data={stack[0]}
-              onPointerDown={()=>onPointerDown(r,c)}
-              onPointerUp={()=>onPointerUp(r,c)}
+              onPointerDown={() => onPointerDown(r, c)}
+              onPointerUp={() => onPointerUp(r, c)}
             />
           ))
         )}
       </div>
 
-      {confetti.map(c=>(
-        <Confetti key={c.id} x={c.x} y={c.y} />
-      ))}
-    </>
+      <ProgressBar progress={progress} />
+    </div>
   );
 }
