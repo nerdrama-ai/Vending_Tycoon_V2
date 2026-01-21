@@ -1,89 +1,73 @@
-import { useEffect, useRef, useState } from "react";
-import { generateBoard } from "../engine/randomizer";
-import { findMatches } from "../engine/matchEngine";
+import { useEffect, useState } from "react";
+import { generateSafeBoard } from "../engine/level";
+import { trySwap } from "../engine/swap";
+import { resolveBoard } from "../engine/resolve";
 import Tile from "./Tile";
-import ProgressBar from "./ProgressBar";
 
-export default function GameBoard({ level, onLevelComplete }) {
-  const [board, setBoard] = useState(() => generateBoard(level));
-  const [matchesDone, setMatchesDone] = useState(0);
-  const drag = useRef(null);
+export default function GameBoard({ onMatch }) {
+  const [board, setBoard] = useState(() => generateSafeBoard());
+  const [selected, setSelected] = useState(null);
+  const [animating, setAnimating] = useState(false);
+  const [shake, setShake] = useState([]);
 
-  const progress = Math.min(
-    (matchesDone / level.matches) * 100,
-    100
-  );
+  function handleTileClick(r, c) {
+    if (animating) return;
 
-  useEffect(() => {
-    if (progress >= 100) {
-      setTimeout(() => {
-        onLevelComplete();
-      }, 600);
-    }
-  }, [progress]);
-
-  function swap(a, b) {
-    const copy = board.map(r => r.map(c => [...c]));
-    [copy[a.r][a.c][0], copy[b.r][b.c][0]] =
-      [copy[b.r][b.c][0], copy[a.r][a.c][0]];
-    return copy;
-  }
-
-  function trySwap(a, b) {
-    const swapped = swap(a, b);
-    const matches = findMatches(swapped);
-
-    if (!matches.length) {
-      setBoard(swap(a, b)); // snap back
+    if (!selected) {
+      setSelected({ r, c });
       return;
     }
 
-    setBoard(swapped);
-    setTimeout(() => crush(matches), 250);
+    // Clicking same tile deselects
+    if (selected.r === r && selected.c === c) {
+      setSelected(null);
+      return;
+    }
+
+    attemptSwap(selected, { r, c });
+    setSelected(null);
   }
 
-  function crush(matches) {
-    const copy = board.map(r => r.map(c => [...c]));
+  function attemptSwap(from, to) {
+    setAnimating(true);
 
-    matches.forEach(group =>
-      group.forEach(([r, c]) => {
-        copy[r][c].shift();
-      })
-    );
+    const result = trySwap(board, from, to);
 
-    setMatchesDone(m => m + matches.length);
-    setBoard(copy);
-  }
+    if (!result.success) {
+      // Invalid swap → shake
+      setShake([from, to]);
+      setTimeout(() => {
+        setShake([]);
+        setAnimating(false);
+      }, 300);
+      return;
+    }
 
-  function onPointerDown(r, c) {
-    drag.current = { r, c };
-  }
+    // Valid swap
+    let newBoard = result.board;
+    setBoard(newBoard);
 
-  function onPointerUp(r, c) {
-    if (!drag.current) return;
-    const d = drag.current;
-    const dx = Math.abs(d.c - c);
-    const dy = Math.abs(d.r - r);
-    if (dx + dy === 1) trySwap(d, { r, c });
-    drag.current = null;
+    setTimeout(() => {
+      const cleared = resolveBoard(newBoard);
+      setBoard([...newBoard]);
+      onMatch(cleared);
+      setAnimating(false);
+    }, 250);
   }
 
   return (
-    <div className="machine-layout">
-      <div className="machine-grid">
-        {board.map((row, r) =>
-          row.map((stack, c) => (
-            <Tile
-              key={r + "-" + c}
-              data={stack[0]}
-              onPointerDown={() => onPointerDown(r, c)}
-              onPointerUp={() => onPointerUp(r, c)}
-            />
-          ))
-        )}
-      </div>
-
-      <ProgressBar progress={progress} />
+    <div className="machine-grid">
+      {board.map((row, r) =>
+        row.map((cell, c) => (
+          <Tile
+            key={`${r}-${c}`}
+            data={cell}
+            selected={selected?.r === r && selected?.c === c}
+            shake={shake.some(t => t.r === r && t.c === c)}
+            onClick={() => handleTileClick(r, c)}
+          />
+        ))
+      )}
     </div>
   );
 }
