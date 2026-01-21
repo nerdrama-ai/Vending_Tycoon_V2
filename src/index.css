@@ -1,37 +1,140 @@
-
-body { margin:0; background:#111; color:white; font-family:sans-serif; }
-.app { text-align:center; }
-.board {
-  display:grid;
-  grid-template-columns:repeat(5,80px);
-  grid-template-rows:repeat(7,80px);
-  gap:10px;
-  justify-content:center;
+/* ========== GLOBAL ========== */
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overscroll-behavior: none;
 }
+
+.app {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+}
+
+/* ========== TITLE ========== */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 8px 0 12px;
+  text-align: center;
+}
+
+/* ========== VENDING MACHINE LAYOUT ========== */
+.machine-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+/* ========== GAME GRID ========== */
+.machine-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 72px);
+  grid-template-rows: repeat(7, 72px);
+  gap: 10px;
+  justify-content: center;
+}
+
+/* ========== TILE ========== */
 .tile {
-  width:80px;
-  height:80px;
-  background:#1c1c1c;
-  border-radius:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:grab;
-  overflow:hidden;
+  width: 72px;
+  height: 72px;
+  background: radial-gradient(circle at top, #2a2a2a, #141414);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.05),
+    inset 0 -2px 3px rgba(0,0,0,0.4);
+  transition: transform 0.12s ease;
 }
-.tile:active { transform:scale(0.93); }
-.item { width:72px; height:72px; object-fit:contain; pointer-events:none; }
 
+.tile:active {
+  transform: scale(0.93);
+  cursor: grabbing;
+}
+
+.item {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ========== PROGRESS BAR ========== */
+.progress-container {
+  width: 18px;
+  background: #0f0f0f;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #2c2c2c;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+}
+
+.progress-fill {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(
+    to top,
+    #ff6a00,
+    #ff9f00,
+    #ffd000
+  );
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== CONFETTI ========== */
 .confetti {
-  position:absolute;
+  position: absolute;
+  pointer-events: none;
   animation: pop 0.8s ease forwards;
 }
+
 .confetti span {
   color: gold;
-  font-size:18px;
-  position:absolute;
+  font-size: 18px;
+  position: absolute;
 }
+
+/* ========== ANIMATIONS ========== */
 @keyframes pop {
-  from { opacity:1; transform:translateY(0); }
-  to { opacity:0; transform:translateY(-60px); }
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.4);
+  }
+}
+
+/* ========== MOBILE SAFETY ========== */
+@media (max-width: 420px) {
+  .machine-grid {
+    grid-template-columns: repeat(5, 64px);
+    grid-template-rows: repeat(7, 64px);
+    gap: 8px;
+  }
+
+  .tile {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+  }
+
+  .item {
+    width: 56px;
+    height: 56px;
+  }
 }
