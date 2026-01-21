@@ -1,19 +1,26 @@
-
 import { useState } from "react";
 import GameBoard from "./components/GameBoard";
-import HUD from "./components/HUD";
 import { levels } from "./engine/levelData";
+import { getMachineSkin } from "./engine/machineSkins";
 
 export default function App() {
-  const [level, setLevel] = useState(0);
+  const [levelIndex, setLevelIndex] = useState(0);
+
+  const bg = getMachineSkin(levelIndex + 1);
 
   return (
-    <div className="app">
-      <HUD level={level + 1} />
+    <div
+      className="app"
+      style={{
+        backgroundImage: `url(${bg})`
+      }}
+    >
+      <h1 className="title">Vending Tycoon</h1>
+
       <GameBoard
-        level={levels[level]}
+        level={levels[levelIndex]}
         onLevelComplete={() =>
-          setLevel(l => Math.min(l + 1, levels.length - 1))
+          setLevelIndex(i => Math.min(i + 1, levels.length - 1))
         }
       />
     </div>
